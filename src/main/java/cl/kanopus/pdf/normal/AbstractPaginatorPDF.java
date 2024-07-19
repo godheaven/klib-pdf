@@ -3,7 +3,6 @@ package cl.kanopus.pdf.normal;
 import cl.kanopus.common.util.Utils;
 import cl.kanopus.pdf.FontFamily;
 import cl.kanopus.pdf.normal.table.PDFTable;
-
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Rectangle;
@@ -27,9 +26,6 @@ public abstract class AbstractPaginatorPDF extends AbstractPrintNormal {
     private boolean alwaysPrintHeader = true;
     private int index = 0;
     private boolean printDateOfGeneration = false;
-
-    public AbstractPaginatorPDF() {
-    }
 
     public void setAlwaysPrintHeader(boolean alwaysPrintHeader) {
         this.alwaysPrintHeader = alwaysPrintHeader;
@@ -80,8 +76,6 @@ public abstract class AbstractPaginatorPDF extends AbstractPrintNormal {
         for (CustomList custom : lists) {
             index = 0;
             List<List> sublist = Utils.chunkList(custom.getList(), custom.getLimit());
-
-            //int cantidadHojas = sublist.size();
             for (List sl : sublist) {
                 if (custom.header != null) {
                     custom.header.print();
@@ -92,7 +86,7 @@ public abstract class AbstractPaginatorPDF extends AbstractPrintNormal {
                     printAbsolute("Página " + page + " de " + totalPages, 570, 30, Align.RIGHT);
                 }
 
-                if (!(page == totalPages)) {
+                if (page != totalPages) {
                     document.newPage();
                     if (alwaysPrintHeader) {
                         header();

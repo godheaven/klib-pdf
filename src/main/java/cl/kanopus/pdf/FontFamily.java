@@ -26,4 +26,14 @@ public class FontFamily {
 
     public static final Font FONT_10_RED_BOLD = FontFactory.getFont("arial", 10, Font.BOLD, BaseColor.RED);
 
+    public static final Font FONT_12_BLACK_NORMAL = FontFactory.getFont("arial", 12, Font.NORMAL, BaseColor.BLACK);
+    public static final Font FONT_12_BLACK_BOLD = FontFactory.getFont("arial", 12, Font.BOLD, BaseColor.BLACK);
+    public static final Font FONT_12_RED_BOLD = FontFactory.getFont("arial", 12, Font.BOLD, BaseColor.RED);
+
+    public static final Font FONT_16_BLACK_NORMAL = FontFactory.getFont("arial", 16, Font.NORMAL, BaseColor.BLACK);
+    public static final Font FONT_16_BLACK_BOLD = FontFactory.getFont("arial", 16, Font.BOLD, BaseColor.BLACK);
+    public static final Font FONT_16_RED_BOLD = FontFactory.getFont("arial", 16, Font.BOLD, BaseColor.RED);
+
+    private FontFamily() {
+    }
 }
