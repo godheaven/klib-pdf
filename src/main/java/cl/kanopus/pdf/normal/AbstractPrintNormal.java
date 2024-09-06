@@ -46,7 +46,7 @@ public abstract class AbstractPrintNormal {
     private static final Font DEFAULT_FONT = FontFamily.FONT_10_BLACK_NORMAL;
     private Space space = Space.NORMAL;
 
-    public static enum Scale {
+    public enum Scale {
 
         NORMAL(164, 62),
         BIG(330, 72);
@@ -68,7 +68,7 @@ public abstract class AbstractPrintNormal {
 
     }
 
-    public static enum Space {
+    public enum Space {
 
         LOW(10),
         NORMAL(15),
@@ -81,7 +81,7 @@ public abstract class AbstractPrintNormal {
 
     }
 
-    public static enum Align {
+    public enum Align {
 
         LEFT(Element.ALIGN_LEFT),
         CENTER(Element.ALIGN_CENTER),
@@ -278,19 +278,4 @@ public abstract class AbstractPrintNormal {
         return Image.getInstance(baos.toByteArray());
     }
 
-    /*
-    protected Image generateBarcode(String code) throws RuntimeException {
-        try {
-            Barcode barcode39 = BarcodeFactory.createCode39(code, false);//aqui generamos el codigo de barras
-            barcode39.setDrawingText(false);//aqui dibujamos el codigo en una imagen
-            barcode39.setBarHeight(25);//aqui ponemos la altura del codigo de barras
-            barcode39.setBarWidth(1);//aqui ponemos la longitud del codigo de barras
-            BufferedImage buffer = BarcodeImageHandler.getImage(barcode39);
-            Image imageBarcode = bufferedImage2Image(buffer);
-            imageBarcode.scaleAbsolute(164, 51);
-            return imageBarcode;
-        } catch (Exception e) {
-            throw new RuntimeException("Error al generar el codigo de barra número " + code);
-        }
-    }*/
 }

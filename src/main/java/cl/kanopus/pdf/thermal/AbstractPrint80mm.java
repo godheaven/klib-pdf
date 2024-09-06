@@ -32,15 +32,15 @@ public abstract class AbstractPrint80mm {
 
     protected PdfContentByte canvas = null;
 
-    public static final int PAGE_WIDTH = (int) (205); //80 mm -->  //2,5625
-    public static final int MARGIN_LEFT = (int) (3);
-    public static final int MARGIN_RIGHT = (int) (3);
+    public static final int PAGE_WIDTH = 205; //80 mm -->  //2,5625
+    public static final int MARGIN_LEFT = 3;
+    public static final int MARGIN_RIGHT = 3;
     private int positionY = 0;
 
     private Font font = FontFamily.FONT_8_BLACK_NORMAL;
     private Space space = Space.NORMAL;
 
-    public static enum Space {
+    public enum Space {
 
         LOW(10),
         NORMAL(15),
@@ -53,7 +53,7 @@ public abstract class AbstractPrint80mm {
 
     }
 
-    public static enum Align {
+    public enum Align {
 
         LEFT(Element.ALIGN_LEFT),
         CENTER(Element.ALIGN_CENTER),
@@ -161,16 +161,15 @@ public abstract class AbstractPrint80mm {
     protected void printCodigoBarra(Document document, String codigoBarra, int absoluteX, int absoluteY) throws PrinterException {
 
         try {
-            Barcode barcode_c = BarcodeFactory.createCode39(codigoBarra, false);//aqui generamos el codigo de barras
-            barcode_c.setDrawingText(false);//aqui dibujamos el codigo en una imagen
-            barcode_c.setBarHeight(33);//aqui ponemos la altura del codigo de barras
-            barcode_c.setBarWidth(1);//aqui ponemos la longitud del codigo de barras
-            BufferedImage image_c = BarcodeImageHandler.getImage(barcode_c);
-            Image imageCodigoBarra = bufferedImage2Image(image_c);
-            imageCodigoBarra.setAbsolutePosition(absoluteX, absoluteY);
-            //imageCodigoBarra.scaleAbsolute(184, 72);
-            imageCodigoBarra.scaleAbsolute(164, 62);
-            document.add(imageCodigoBarra);
+            Barcode barcode = BarcodeFactory.createCode39(codigoBarra, false);//aqui generamos el codigo de barras
+            barcode.setDrawingText(false);//aqui dibujamos el codigo en una imagen
+            barcode.setBarHeight(33);//aqui ponemos la altura del codigo de barras
+            barcode.setBarWidth(1);//aqui ponemos la longitud del codigo de barras
+            BufferedImage image = BarcodeImageHandler.getImage(barcode);
+            Image imageBarcode = bufferedImage2Image(image);
+            imageBarcode.setAbsolutePosition(absoluteX, absoluteY);
+            imageBarcode.scaleAbsolute(164, 62);
+            document.add(imageBarcode);
         } catch (Exception e) {
             throw new PrinterException("Error al generar el codigo de barra número " + codigoBarra);
         }
@@ -180,22 +179,17 @@ public abstract class AbstractPrint80mm {
     private Image bufferedImage2Image(BufferedImage bufferedImage) throws IOException, BadElementException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(bufferedImage, "png", baos);
-        Image image = Image.getInstance(baos.toByteArray());
-        return image;
+        return Image.getInstance(baos.toByteArray());
     }
 
     protected Image generateBarcode(String code) throws RuntimeException {
         try {
-            Barcode barcode_c = BarcodeFactory.createCode39(code, false);//aqui generamos el codigo de barras
-            barcode_c.setDrawingText(false);//aqui dibujamos el codigo en una imagen
-            //barcode_c.setBarHeight(33);//aqui ponemos la altura del codigo de barras
-            barcode_c.setBarHeight(25);//aqui ponemos la altura del codigo de barras
-            barcode_c.setBarWidth(1);//aqui ponemos la longitud del codigo de barras
-            BufferedImage image_c = BarcodeImageHandler.getImage(barcode_c);
-            Image imageBarcode = bufferedImage2Image(image_c);
-            //imageBarcode.setAbsolutePosition(absoluteX, absoluteY); FIXME
-            //imageCodigoBarra.scaleAbsolute(184, 72);
-            //imageBarcode.scaleAbsolute(164, 62);
+            Barcode barcode = BarcodeFactory.createCode39(code, false);//aqui generamos el codigo de barras
+            barcode.setDrawingText(false);//aqui dibujamos el codigo en una imagen
+            barcode.setBarHeight(25);//aqui ponemos la altura del codigo de barras
+            barcode.setBarWidth(1);//aqui ponemos la longitud del codigo de barras
+            BufferedImage image = BarcodeImageHandler.getImage(barcode);
+            Image imageBarcode = bufferedImage2Image(image);
             imageBarcode.scaleAbsolute(164, 51);
             return imageBarcode;
         } catch (Exception e) {
