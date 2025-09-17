@@ -1,41 +1,54 @@
+/*-
+ * !--
+ * For support and inquiries regarding this library, please contact:
+ *   soporte@kanopus.cl
+ * 
+ * Project website:
+ *   https://www.kanopus.cl
+ * %%
+ * Copyright (C) 2025 Pablo Díaz Saavedra
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * --!
+ */
 package cl.kanopus.pdf.normal;
 
+
 import cl.kanopus.common.util.Utils;
+import cl.kanopus.pdf.DocumentPrinterException;
 import cl.kanopus.pdf.FontFamily;
-import com.itextpdf.text.BadElementException;
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.ColumnText;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfGState;
-import com.itextpdf.text.pdf.PdfName;
-import com.itextpdf.text.pdf.PdfNumber;
-import com.itextpdf.text.pdf.PdfPage;
-import com.itextpdf.text.pdf.PdfPageEventHelper;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.draw.LineSeparator;
-import java.awt.image.BufferedImage;
-import java.awt.print.PrinterException;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.List;
-import javax.imageio.ImageIO;
 import net.sourceforge.barbecue.Barcode;
+import net.sourceforge.barbecue.BarcodeException;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
+import net.sourceforge.barbecue.output.OutputException;
 
-/**
- *
- * @author Pablo Diaz Saavedra
- * @email pabloandres.diazsaavedra@gmail.com
- */
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+
 public abstract class AbstractPrintNormal {
 
-    protected PdfContentByte canvas = null;
+    private Document document = null;
+    private PdfContentByte canvas = null;
+    private ByteArrayOutputStream baos = null;
 
     public static final int PAGE_WIDTH = 595; //21cm
     public static final int PAGE_HEIGHT = 935;  //33cm
@@ -48,7 +61,7 @@ public abstract class AbstractPrintNormal {
 
     public enum Scale {
 
-        NORMAL(164, 62),
+        NORMAL(164, 51),//62
         BIG(330, 72);
         final int width;
         final int height;
@@ -79,6 +92,10 @@ public abstract class AbstractPrintNormal {
             this.size = size;
         }
 
+        public int getSize() {
+            return size;
+        }
+
     }
 
     public enum Align {
@@ -95,6 +112,30 @@ public abstract class AbstractPrintNormal {
 
     }
 
+    protected AbstractPrintNormal(PdfNumber orientation, int pageWidth, int pageHeight, int margin) throws DocumentPrinterException {
+        try {
+            this.document = new Document(new Rectangle(pageWidth, pageHeight));
+            this.document.setMargins(margin, margin, margin, (margin == 0) ? 0 : 5);
+            this.document.setMarginMirroringTopBottom(false);
+
+            this.baos = new ByteArrayOutputStream();
+            PdfWriter writer = PdfWriter.getInstance(this.document, baos);
+            if (orientation != null) {
+                Rotate event = new Rotate();
+                event.setOrientation(orientation);
+                writer.setPageEvent(event);
+            }
+            this.document.open();
+            this.canvas = writer.getDirectContent();
+        } catch (DocumentException ex) {
+            throw new DocumentPrinterException("Unable to initialize document", ex);
+        }
+    }
+
+    protected AbstractPrintNormal() throws DocumentPrinterException {
+        this(null, PAGE_WIDTH, PAGE_HEIGHT, 20);
+    }
+
     public class Rotate extends PdfPageEventHelper {
 
         protected PdfNumber orientation = PdfPage.PORTRAIT;
@@ -107,6 +148,26 @@ public abstract class AbstractPrintNormal {
         public void onStartPage(PdfWriter writer, Document document) {
             writer.addPageDictEntry(PdfName.ROTATE, orientation);
         }
+    }
+
+    protected PdfContentByte getCanvas() {
+        return canvas;
+    }
+
+    public int getPageHeight() {
+        return PAGE_HEIGHT;
+    }
+
+    public int getPageWidth() {
+        return PAGE_WIDTH;
+    }
+
+    public int getMarginLeft() {
+        return MARGIN_LEFT;
+    }
+
+    public int getMarginRight() {
+        return MARGIN_RIGHT;
     }
 
     public int getPositionY() {
@@ -127,6 +188,10 @@ public abstract class AbstractPrintNormal {
 
     protected void println(String text) {
         printText(text, MARGIN_LEFT, true, null, Align.LEFT);
+    }
+
+    protected void println(String text, Font font) {
+        printText(text, MARGIN_LEFT, true, font, Align.LEFT);
     }
 
     protected void println(String text, int positionX) {
@@ -167,10 +232,14 @@ public abstract class AbstractPrintNormal {
 
     private void printText(String text, int positionX, boolean automaticNewLine, Font font, Align align) {
         if (text != null) {
-            Phrase phrase = new Phrase(text, (font == null) ? DEFAULT_FONT : font);
+            Phrase phrase = new Phrase(text.trim(), (font == null) ? DEFAULT_FONT : font);
             ColumnText.showTextAligned(this.canvas, (align == null) ? Align.LEFT.id : align.id, phrase, positionX, positionY, 0);
         }
         positionY = automaticNewLine ? positionY - space.size : positionY;
+    }
+
+    protected void printlnSplit(int maxLineSize, String text, int positionX) {
+        printlnSplit(maxLineSize, text, positionX, DEFAULT_FONT);
     }
 
     protected void printlnSplit(int maxLineSize, String text, int positionX, int positionY, Font font) {
@@ -251,11 +320,11 @@ public abstract class AbstractPrintNormal {
         return cm * 10;
     }
 
-    protected void printBarcode(Document document, String code, int absoluteX, int absoluteY) throws PrinterException {
-        printBarcode(document, code, absoluteX, absoluteY, Scale.NORMAL);
+    protected void printBarcode(String code, int absoluteX, int absoluteY) throws DocumentPrinterException {
+        printBarcode(code, absoluteX, absoluteY, Scale.NORMAL);
     }
 
-    protected void printBarcode(Document document, String code, int absoluteX, int absoluteY, Scale scale) throws PrinterException {
+    protected void printBarcode(String code, int absoluteX, int absoluteY, Scale scale) throws DocumentPrinterException {
 
         try {
             Barcode barcode39 = BarcodeFactory.createCode39(code, false);//aqui generamos el codigo de barras
@@ -267,15 +336,65 @@ public abstract class AbstractPrintNormal {
             image.setAbsolutePosition(absoluteX, absoluteY);
             image.scaleAbsolute(scale.getWidth(), scale.getHeight());
             document.add(image);
-        } catch (Exception e) {
-            throw new PrinterException("Error al generar el codigo de barra número " + code);
+        } catch (DocumentException | BarcodeException | OutputException ex) {
+            throw new DocumentPrinterException("It is not possible to generate the barcode: " + code, ex);
         }
     }
 
-    private Image bufferedImage2Image(BufferedImage bufferedImage) throws IOException, BadElementException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(bufferedImage, "png", baos);
-        return Image.getInstance(baos.toByteArray());
+    protected void printPdf417(String code, int absoluteX, int absoluteY) throws DocumentPrinterException {
+        printPdf417(code, absoluteX, absoluteY, 184, 72);
+    }
+
+    protected void printPdf417(String code, int absoluteX, int absoluteY, float width, float height) throws DocumentPrinterException {
+        try {
+            BarcodePDF417 pdf417 = new BarcodePDF417();
+            pdf417.setCodeRows(5);
+            pdf417.setCodeColumns(18);
+            pdf417.setErrorLevel(5);
+            pdf417.setLenCodewords(999);
+            pdf417.setOptions(BarcodePDF417.PDF417_FORCE_BINARY);
+            pdf417.setText(code.getBytes(StandardCharsets.ISO_8859_1));
+
+            Image image = pdf417.getImage();
+            image.scaleAbsolute(width, height);
+            image.setAbsolutePosition(absoluteX, absoluteY);
+            printImage(image);
+            setPositionY((int) (absoluteY) - (int) image.getHeight());
+        } catch (BadElementException ex) {
+            throw new DocumentPrinterException("It is not possible to generate the barcode39: " + code, ex);
+        }
+    }
+
+    protected void newLine() {
+        setPositionY(getPositionY() - getSpace().getSize());
+    }
+
+    protected void printImage(Image image) throws DocumentPrinterException {
+        try {
+            document.add(image);
+        } catch (DocumentException ex) {
+            throw new DocumentPrinterException("Unable to add image to document", ex);
+        }
+    }
+
+    protected void newPage() {
+        document.newPage();
+    }
+
+    protected ByteArrayOutputStream close() {
+        document.close();
+        return baos;
+    }
+
+    private Image bufferedImage2Image(BufferedImage bufferedImage) throws DocumentPrinterException {
+        try {
+            ByteArrayOutputStream baosImage = new ByteArrayOutputStream();
+            ImageIO.write(bufferedImage, "png", baosImage);
+            return Image.getInstance(baosImage.toByteArray());
+        } catch (BadElementException | IOException ex) {
+            throw new DocumentPrinterException("It is not possible to insert the image into the document", ex);
+        }
+
     }
 
 }

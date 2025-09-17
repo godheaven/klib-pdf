@@ -1,11 +1,31 @@
+/*-
+ * !--
+ * For support and inquiries regarding this library, please contact:
+ *   soporte@kanopus.cl
+ * 
+ * Project website:
+ *   https://www.kanopus.cl
+ * %%
+ * Copyright (C) 2025 Pablo Díaz Saavedra
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * --!
+ */
 package cl.kanopus.pdf.normal.table;
 
+
 import cl.kanopus.pdf.FontFamily;
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Phrase;
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 
@@ -30,6 +50,15 @@ public class PDFTable extends PdfPTable {
 
     public PDFTable(int numColumns) {
         super(numColumns);
+    }
+
+    @Override
+    public void setTotalWidth(final float[] columnWidth) {
+        try {
+            super.setTotalWidth(columnWidth);
+        } catch (DocumentException ex) {
+            throw new IllegalArgumentException("Cannot adjust total width", ex);
+        }
     }
 
     // create cells
