@@ -2,7 +2,7 @@
  * !--
  * For support and inquiries regarding this library, please contact:
  *   soporte@kanopus.cl
- * 
+ *
  * Project website:
  *   https://www.kanopus.cl
  * %%
@@ -11,9 +11,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,21 +27,23 @@ package cl.kanopus.pdf.normal;
 import cl.kanopus.common.util.Utils;
 import cl.kanopus.pdf.DocumentPrinterException;
 import cl.kanopus.pdf.FontFamily;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.oned.Code39Writer;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.draw.LineSeparator;
-import net.sourceforge.barbecue.Barcode;
-import net.sourceforge.barbecue.BarcodeException;
-import net.sourceforge.barbecue.BarcodeFactory;
-import net.sourceforge.barbecue.BarcodeImageHandler;
-import net.sourceforge.barbecue.output.OutputException;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 
 public abstract class AbstractPrintNormal {
@@ -327,17 +329,35 @@ public abstract class AbstractPrintNormal {
     protected void printBarcode(String code, int absoluteX, int absoluteY, Scale scale) throws DocumentPrinterException {
 
         try {
-            Barcode barcode39 = BarcodeFactory.createCode39(code, false);//aqui generamos el codigo de barras
-            barcode39.setDrawingText(false);//aqui dibujamos el codigo en una imagen
-            barcode39.setBarHeight(33);//aqui ponemos la altura del codigo de barras
-            barcode39.setBarWidth(1);//aqui ponemos la longitud del codigo de barras
-            BufferedImage buffer = BarcodeImageHandler.getImage(barcode39);
-            Image image = bufferedImage2Image(buffer);
+            // --- Parámetros visuales ---
+            int widthPx = Math.max(scale.getWidth(), 300);
+            int heightPx = Math.max(scale.getHeight(), 100);
+
+            // --- Configuración de ZXing ---
+            Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
+            hints.put(EncodeHintType.MARGIN, 0); // Sin margen blanco extra
+
+            // --- Generar código de barras (Code 39) ---
+            BitMatrix bitMatrix = new Code39Writer().encode(code, BarcodeFormat.CODE_39, widthPx, heightPx, hints);
+
+            BufferedImage barcodeImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
+
+            // --- Convertir BufferedImage -> Image (iText) ---
+            Image image = bufferedImageToITextImage(barcodeImage);
             image.setAbsolutePosition(absoluteX, absoluteY);
             image.scaleAbsolute(scale.getWidth(), scale.getHeight());
+
             document.add(image);
-        } catch (DocumentException | BarcodeException | OutputException ex) {
-            throw new DocumentPrinterException("It is not possible to generate the barcode: " + code, ex);
+
+        } catch (IOException | DocumentException e) {
+            throw new DocumentPrinterException("It is not possible to generate the barcode: " + code, e);
+        }
+    }
+
+    private Image bufferedImageToITextImage(BufferedImage bufferedImage) throws IOException, DocumentException {
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            ImageIO.write(bufferedImage, "png", output);
+            return Image.getInstance(output.toByteArray());
         }
     }
 

@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>cl.kanopus</groupId>
 		<artifactId>kanopus-core-parent</artifactId>
-		<version>3.5.6</version>
+		<version>3.5.7</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>cl.kanopus.util</groupId>
 	<artifactId>klib-pdf</artifactId>
-	<version>3.0.0</version>
+	<version>3.57.0</version>
 	<packaging>jar</packaging>
 	<name>klib-pdf</name>
 
@@ -22,11 +22,15 @@
 
 	<dependencies>
 		<!-- INICIO: Dependencias para Codigo Barra -->
-		<!-- TODO: esta libreria debe ser reemplazada por barcode4j -->
 		<dependency>
-			<groupId>net.sourceforge.barbecue</groupId>
-			<artifactId>barbecue</artifactId>
-			<version>1.5-beta1</version>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+			<version>3.5.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>javase</artifactId>
+			<version>3.5.3</version>
 		</dependency>
 		<!-- FIN: Dependencias para Codigo Barra -->
 
@@ -42,7 +46,6 @@
 		<dependency>
 			<groupId>cl.kanopus.util</groupId>
 			<artifactId>klib-common</artifactId>
-			<version>3.0.0</version>
 		</dependency>
 
 	</dependencies>
