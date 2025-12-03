@@ -1,37 +1,26 @@
-![Logo](https://www.kanopus.cl/admin/javax.faces.resource/images/logo-gray.png.xhtml?ln=paradise-layout)
-
-# klib-pdf
-
-This project is designed as a utility that allows you to generate PDF files in an easier way.
-
-## Features
-
-- It allows you to generate PDF in a special 80mm format for thermal printers.
-- It allows you to generate PDF in a special 58mm format for thermal printers.
-- Allows you to print PDF417 stamp
-
-## 🚀 Installation
-
-Add the dependency to your `pom.xml`:
-
-```xml
-
-<dependency>
-	<groupId>cl.kanopus.util</groupId>
-	<artifactId>klib-pdf</artifactId>
-	<version>3.58.0</version>
-</dependency>
-```
-
----
-
-## Usage/Examples
-
-1. Creating a PDF
-
-```java
-// Full example based on the test class Receipt80mmPDF
-// filepath: src/test/java/cl/kanopus/pdf/thermal/Receipt80mmPDF.java
+/*-
+ * !--
+ * For support and inquiries regarding this library, please contact:
+ *   soporte@kanopus.cl
+ * 
+ * Project website:
+ *   https://www.kanopus.cl
+ * %%
+ * Copyright (C) 2025 Pablo Díaz Saavedra
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * --!
+ */
 package cl.kanopus.pdf.thermal;
 
 import cl.kanopus.common.util.Utils;
@@ -150,24 +139,3 @@ public class Receipt80mmPDF extends AbstractPrint80mm {
     }
 
 }
-```
-
-You can also run the provided test which generates `test.pdf` in the project root. The resulting sample output is shown
-below:
-
-![Receipt sample](docs/images/receipt_sample.png)
-
-## Authors
-
-- [@pabloandres.diazsaavedra](https://www.linkedin.com/in/pablo-diaz-saavedra-4b7b0522/)
-
-## License
-
-This software is licensed under the Apache License, Version 2.0. See the LICENSE file for details.
-I hope you enjoy it.
-
-[![Apache License, Version 2.0](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://opensource.org/license/apache-2-0)
-
-## Support
-
-For support, email soporte@kanopus.cl
