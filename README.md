@@ -1,4 +1,4 @@
-![Logo](https://www.kanopus.cl/admin/javax.faces.resource/images/logo-gray.png.xhtml?ln=paradise-layout)
+![Logo](https://www.kanopus.cl/assets/kanopus-grey.png)
 
 # klib-pdf
 

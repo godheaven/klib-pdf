@@ -17,6 +17,7 @@
 	<properties>
 		<maven.test.skip>false</maven.test.skip>
 		<license.skip>false</license.skip>
+		<jacoco.minimum.coverage>0.60</jacoco.minimum.coverage>
 	</properties>
 
 	<dependencies>
