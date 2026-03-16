@@ -2,7 +2,7 @@
  * !--
  * For support and inquiries regarding this library, please contact:
  *   soporte@kanopus.cl
- * 
+ *
  * Project website:
  *   https://www.kanopus.cl
  * %%
@@ -11,9 +11,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,18 +23,17 @@
  */
 package cl.kanopus.pdf.normal;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import cl.kanopus.pdf.DocumentPrinterException;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.PdfContentByte;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class AbstractPrintNormalTest {
 
@@ -108,10 +107,9 @@ class AbstractPrintNormalTest {
 
         Image image = Image.getInstance(bi, null);
         int before = printer.getPositionY();
-        // printImage doesn't change positionY except in printPdf417; ensure method adds without exception
+        // printImage doesn't change positionY except in printPdf417; ensure method adds without
+        // exception
         assertDoesNotThrow(() -> printer.printImage(image));
         assertEquals(before, printer.getPositionY());
     }
-
 }
-

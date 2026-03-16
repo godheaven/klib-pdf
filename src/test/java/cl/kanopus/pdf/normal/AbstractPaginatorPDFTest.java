@@ -23,16 +23,15 @@
  */
 package cl.kanopus.pdf.normal;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import cl.kanopus.pdf.DocumentPrinterException;
 import cl.kanopus.pdf.normal.table.PDFTable;
 import cl.kanopus.pdf.testutil.TestPDFTable;
-import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class AbstractPaginatorPDFTest {
 
@@ -55,7 +54,8 @@ class AbstractPaginatorPDFTest {
         }
 
         @Override
-        protected PDFTable createTableItems(int section, List<String> sublist) throws DocumentPrinterException {
+        protected PDFTable createTableItems(int section, List<String> sublist)
+                throws DocumentPrinterException {
             createdSections++;
             TestPDFTable table = new TestPDFTable(3, 10f);
             for (String s : sublist) {
@@ -93,8 +93,7 @@ class AbstractPaginatorPDFTest {
         ByteArrayOutputStream baos = paginator.generateOutput();
         assertNotNull(baos);
         assertTrue(baos.size() > 0);
-        // cuando la lista está vacía no se genera ninguna sección
+        // when the list is empty, no sections are generated
         assertEquals(0, paginator.getCreatedSections());
     }
-
 }

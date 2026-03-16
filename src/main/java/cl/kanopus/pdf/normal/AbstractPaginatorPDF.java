@@ -2,7 +2,7 @@
  * !--
  * For support and inquiries regarding this library, please contact:
  *   soporte@kanopus.cl
- * 
+ *
  * Project website:
  *   https://www.kanopus.cl
  * %%
@@ -11,9 +11,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,17 +23,14 @@
  */
 package cl.kanopus.pdf.normal;
 
-
 import cl.kanopus.common.util.Utils;
 import cl.kanopus.pdf.DocumentPrinterException;
 import cl.kanopus.pdf.FontFamily;
 import cl.kanopus.pdf.normal.table.PDFTable;
-
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 
 public abstract class AbstractPaginatorPDF<T> extends AbstractPrintNormal {
 
@@ -76,10 +73,10 @@ public abstract class AbstractPaginatorPDF<T> extends AbstractPrintNormal {
 
     protected abstract void header() throws DocumentPrinterException;
 
-    protected abstract PDFTable createTableItems(int section, List<T> sublist) throws DocumentPrinterException;
+    protected abstract PDFTable createTableItems(int section, List<T> sublist)
+            throws DocumentPrinterException;
 
-    protected void footer() throws DocumentPrinterException {
-    }
+    protected void footer() throws DocumentPrinterException {}
 
     public final ByteArrayOutputStream generateOutput() throws DocumentPrinterException {
         header();
@@ -98,13 +95,20 @@ public abstract class AbstractPaginatorPDF<T> extends AbstractPrintNormal {
         }
         footer();
         if (printDateOfGeneration) {
-            printAbsolute("Documento generado con fecha: " + Utils.getDateTimeFormat(LocalDateTime.now(), "dd MMMM yyyy HH:mm:ss"), 10, 30, FontFamily.FONT_7_BLACK_NORMAL);
+            printAbsolute(
+                    "Documento generado con fecha: "
+                            + Utils.getDateTimeFormat(LocalDateTime.now(), "dd MMMM yyyy HH:mm:ss"),
+                    10,
+                    30,
+                    FontFamily.FONT_7_BLACK_NORMAL);
         }
 
         return close();
     }
 
-    private void generateBody(Header customHeader, int currentPage, int totalPages, int section, List<T> sl) throws DocumentPrinterException {
+    private void generateBody(
+            Header customHeader, int currentPage, int totalPages, int section, List<T> sl)
+            throws DocumentPrinterException {
         if (customHeader != null) {
             customHeader.print();
         }
@@ -165,12 +169,10 @@ public abstract class AbstractPaginatorPDF<T> extends AbstractPrintNormal {
         public Header getHeader() {
             return header;
         }
-
     }
 
     protected interface Header {
 
         abstract void print() throws DocumentPrinterException;
     }
-
 }

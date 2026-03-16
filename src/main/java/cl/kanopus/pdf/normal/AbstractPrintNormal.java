@@ -23,7 +23,6 @@
  */
 package cl.kanopus.pdf.normal;
 
-
 import cl.kanopus.common.util.Utils;
 import cl.kanopus.pdf.DocumentPrinterException;
 import cl.kanopus.pdf.FontFamily;
@@ -35,8 +34,6 @@ import com.google.zxing.oned.Code39Writer;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.draw.LineSeparator;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -44,7 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-
+import javax.imageio.ImageIO;
 
 public abstract class AbstractPrintNormal {
 
@@ -52,8 +49,8 @@ public abstract class AbstractPrintNormal {
     private PdfContentByte canvas = null;
     private ByteArrayOutputStream baos = null;
 
-    public static final int PAGE_WIDTH = 595; //21cm
-    public static final int PAGE_HEIGHT = 935;  //33cm
+    public static final int PAGE_WIDTH = 595; // 21cm
+    public static final int PAGE_HEIGHT = 935; // 33cm
     public static final int MARGIN_LEFT = 3;
     public static final int MARGIN_RIGHT = 3;
     private int positionY = 0;
@@ -62,8 +59,7 @@ public abstract class AbstractPrintNormal {
     private Space space = Space.NORMAL;
 
     public enum Scale {
-
-        NORMAL(164, 51),//62
+        NORMAL(164, 51), // 62
         BIG(330, 72);
         final int width;
         final int height;
@@ -80,11 +76,9 @@ public abstract class AbstractPrintNormal {
         public int getHeight() {
             return height;
         }
-
     }
 
     public enum Space {
-
         LOW(10),
         NORMAL(15),
         HIGHT(20);
@@ -97,11 +91,9 @@ public abstract class AbstractPrintNormal {
         public int getSize() {
             return size;
         }
-
     }
 
     public enum Align {
-
         LEFT(Element.ALIGN_LEFT),
         CENTER(Element.ALIGN_CENTER),
         RIGHT(Element.ALIGN_RIGHT);
@@ -111,10 +103,10 @@ public abstract class AbstractPrintNormal {
         Align(int id) {
             this.id = id;
         }
-
     }
 
-    protected AbstractPrintNormal(PdfNumber orientation, int pageWidth, int pageHeight, int margin) throws DocumentPrinterException {
+    protected AbstractPrintNormal(PdfNumber orientation, int pageWidth, int pageHeight, int margin)
+            throws DocumentPrinterException {
         try {
             this.document = new Document(new Rectangle(pageWidth, pageHeight));
             this.document.setMargins(margin, margin, margin, (margin == 0) ? 0 : 5);
@@ -232,10 +224,17 @@ public abstract class AbstractPrintNormal {
         printText(text, positionX, false, font, align);
     }
 
-    private void printText(String text, int positionX, boolean automaticNewLine, Font font, Align align) {
+    private void printText(
+            String text, int positionX, boolean automaticNewLine, Font font, Align align) {
         if (text != null) {
             Phrase phrase = new Phrase(text.trim(), (font == null) ? DEFAULT_FONT : font);
-            ColumnText.showTextAligned(this.canvas, (align == null) ? Align.LEFT.id : align.id, phrase, positionX, positionY, 0);
+            ColumnText.showTextAligned(
+                    this.canvas,
+                    (align == null) ? Align.LEFT.id : align.id,
+                    phrase,
+                    positionX,
+                    positionY,
+                    0);
         }
         positionY = automaticNewLine ? positionY - space.size : positionY;
     }
@@ -244,7 +243,8 @@ public abstract class AbstractPrintNormal {
         printlnSplit(maxLineSize, text, positionX, DEFAULT_FONT);
     }
 
-    protected void printlnSplit(int maxLineSize, String text, int positionX, int positionY, Font font) {
+    protected void printlnSplit(
+            int maxLineSize, String text, int positionX, int positionY, Font font) {
         setPositionY(positionY);
         printlnSplit(maxLineSize, text, positionX, font);
     }
@@ -272,7 +272,8 @@ public abstract class AbstractPrintNormal {
 
     protected void printAbsolute(String text, float x, float y, Font font, Align align) {
         Phrase phrase = new Phrase(text, (font == null) ? DEFAULT_FONT : font);
-        ColumnText.showTextAligned(this.canvas, (align == null) ? Align.LEFT.id : align.id, phrase, x, y, 0);
+        ColumnText.showTextAligned(
+                this.canvas, (align == null) ? Align.LEFT.id : align.id, phrase, x, y, 0);
     }
 
     protected void printLine() {
@@ -280,13 +281,15 @@ public abstract class AbstractPrintNormal {
     }
 
     protected void printLine(int leftX, int rigthX, Align align, boolean bold) {
-        LineSeparator lineSeparator = new LineSeparator(bold ? 1 : 0, 100, BaseColor.BLACK, align.id, 0);
+        LineSeparator lineSeparator =
+                new LineSeparator(bold ? 1 : 0, 100, BaseColor.BLACK, align.id, 0);
         lineSeparator.drawLine(this.canvas, leftX, rigthX, positionY);
         positionY = positionY - space.size;
     }
 
     protected void printLine(int leftX, int rigthX, int y, boolean bold) {
-        LineSeparator lineSeparator = new LineSeparator(bold ? 1 : 0, 100, BaseColor.BLACK, Element.ALIGN_LEFT, 0);
+        LineSeparator lineSeparator =
+                new LineSeparator(bold ? 1 : 0, 100, BaseColor.BLACK, Element.ALIGN_LEFT, 0);
         lineSeparator.drawLine(this.canvas, leftX, rigthX, y);
     }
 
@@ -294,7 +297,8 @@ public abstract class AbstractPrintNormal {
         printLine(leftX, rigthX, y, false);
     }
 
-    protected void drawRectangleFixed(float x, float y, float width, float height, BaseColor color, int lineWidth) {
+    protected void drawRectangleFixed(
+            float x, float y, float width, float height, BaseColor color, int lineWidth) {
         this.canvas.saveState();
         PdfGState state = new PdfGState();
         state.setFillOpacity(0);
@@ -306,7 +310,8 @@ public abstract class AbstractPrintNormal {
         this.canvas.restoreState();
     }
 
-    protected void drawRectangle(float x, float y, float width, float height, BaseColor color, int lineWidth) {
+    protected void drawRectangle(
+            float x, float y, float width, float height, BaseColor color, int lineWidth) {
         this.canvas.saveState();
         PdfGState state = new PdfGState();
         state.setFillOpacity(0);
@@ -322,27 +327,31 @@ public abstract class AbstractPrintNormal {
         return cm * 10;
     }
 
-    protected void printBarcode(String code, int absoluteX, int absoluteY) throws DocumentPrinterException {
+    protected void printBarcode(String code, int absoluteX, int absoluteY)
+            throws DocumentPrinterException {
         printBarcode(code, absoluteX, absoluteY, Scale.NORMAL);
     }
 
-    protected void printBarcode(String code, int absoluteX, int absoluteY, Scale scale) throws DocumentPrinterException {
+    protected void printBarcode(String code, int absoluteX, int absoluteY, Scale scale)
+            throws DocumentPrinterException {
 
         try {
-            // --- Parámetros visuales ---
+            // --- Visual parameters ---
             int widthPx = Math.max(scale.getWidth(), 300);
             int heightPx = Math.max(scale.getHeight(), 100);
 
-            // --- Configuración de ZXing ---
+            // --- ZXing configuration ---
             Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
-            hints.put(EncodeHintType.MARGIN, 0); // Sin margen blanco extra
+            hints.put(EncodeHintType.MARGIN, 0); // No extra white margin
 
-            // --- Generar código de barras (Code 39) ---
-            BitMatrix bitMatrix = new Code39Writer().encode(code, BarcodeFormat.CODE_39, widthPx, heightPx, hints);
+            // --- Generate barcode (Code 39) ---
+            BitMatrix bitMatrix =
+                    new Code39Writer()
+                            .encode(code, BarcodeFormat.CODE_39, widthPx, heightPx, hints);
 
             BufferedImage barcodeImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
 
-            // --- Convertir BufferedImage -> Image (iText) ---
+            // --- Convert BufferedImage -> Image (iText) ---
             Image image = bufferedImageToITextImage(barcodeImage);
             image.setAbsolutePosition(absoluteX, absoluteY);
             image.scaleAbsolute(scale.getWidth(), scale.getHeight());
@@ -350,22 +359,26 @@ public abstract class AbstractPrintNormal {
             document.add(image);
 
         } catch (IOException | DocumentException e) {
-            throw new DocumentPrinterException("It is not possible to generate the barcode: " + code, e);
+            throw new DocumentPrinterException(
+                    "It is not possible to generate the barcode: " + code, e);
         }
     }
 
-    private Image bufferedImageToITextImage(BufferedImage bufferedImage) throws IOException, DocumentException {
+    private Image bufferedImageToITextImage(BufferedImage bufferedImage)
+            throws IOException, DocumentException {
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             ImageIO.write(bufferedImage, "png", output);
             return Image.getInstance(output.toByteArray());
         }
     }
 
-    protected void printPdf417(String code, int absoluteX, int absoluteY) throws DocumentPrinterException {
+    protected void printPdf417(String code, int absoluteX, int absoluteY)
+            throws DocumentPrinterException {
         printPdf417(code, absoluteX, absoluteY, 184, 72);
     }
 
-    protected void printPdf417(String code, int absoluteX, int absoluteY, float width, float height) throws DocumentPrinterException {
+    protected void printPdf417(String code, int absoluteX, int absoluteY, float width, float height)
+            throws DocumentPrinterException {
         try {
             BarcodePDF417 pdf417 = new BarcodePDF417();
             pdf417.setCodeRows(5);
@@ -381,7 +394,8 @@ public abstract class AbstractPrintNormal {
             printImage(image);
             setPositionY((int) (absoluteY) - (int) image.getHeight());
         } catch (BadElementException ex) {
-            throw new DocumentPrinterException("It is not possible to generate the barcode39: " + code, ex);
+            throw new DocumentPrinterException(
+                    "It is not possible to generate the barcode39: " + code, ex);
         }
     }
 
@@ -412,9 +426,8 @@ public abstract class AbstractPrintNormal {
             ImageIO.write(bufferedImage, "png", baosImage);
             return Image.getInstance(baosImage.toByteArray());
         } catch (BadElementException | IOException ex) {
-            throw new DocumentPrinterException("It is not possible to insert the image into the document", ex);
+            throw new DocumentPrinterException(
+                    "It is not possible to insert the image into the document", ex);
         }
-
     }
-
 }

@@ -1,10 +1,14 @@
-![Logo](https://www.kanopus.cl/assets/kanopus-grey.png)
+<p align="left">
+  <img src="https://www.kanopus.cl/assets/kanopus_black.png" width="220"/>
+</p>
+
+![Maven](https://img.shields.io/maven-central/v/cl.kanopus.util/klib-pdf) ![License](https://img.shields.io/badge/license-Apache%20License%202.0-blue) ![Java](https://img.shields.io/badge/java-17+-orange)
 
 # klib-pdf
 
 This project is designed as a utility that allows you to generate PDF files in an easier way.
 
-## Features
+## ✨ Features
 
 - It allows you to generate PDF in a special 80mm format for thermal printers.
 - It allows you to generate PDF in a special 58mm format for thermal printers.
@@ -19,13 +23,13 @@ Add the dependency to your `pom.xml`:
 <dependency>
 	<groupId>cl.kanopus.util</groupId>
 	<artifactId>klib-pdf</artifactId>
-	<version>3.58.0</version>
+	<version>4.03.0</version>
 </dependency>
 ```
 
 ---
 
-## Usage/Examples
+## 🚀 Usage Guide
 
 1. Creating a PDF
 
@@ -154,20 +158,25 @@ public class Receipt80mmPDF extends AbstractPrint80mm {
 
 You can also run the provided test which generates `test.pdf` in the project root. The resulting sample output is shown
 below:
-
 ![Receipt sample](docs/images/receipt_sample.png)
 
-## Authors
 
-- [@pabloandres.diazsaavedra](https://www.linkedin.com/in/pablo-diaz-saavedra-4b7b0522/)
 
-## License
+## 👤 Author
+
+**Pablo Andrés Díaz Saavedra** — Founder of **Kanopus – Estrellas del Software**
+
+Kanopus builds tools and platforms that simplify software development and DevOps processes.
+
+[GitHub](https://github.com/godheaven) | [LinkedIn](https://www.linkedin.com/in/pablo-diaz-saavedra-4b7b0522/) | [Website](https://kanopus.cl)
+
+## 📄 License
 
 This software is licensed under the Apache License, Version 2.0. See the LICENSE file for details.
 I hope you enjoy it.
 
 [![Apache License, Version 2.0](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://opensource.org/license/apache-2-0)
 
-## Support
+## 🛟 Support
 
-For support, email soporte@kanopus.cl
+For support or questions contact: 📧 [soporte@kanopus.cl](mailto:soporte@kanopus.cl)

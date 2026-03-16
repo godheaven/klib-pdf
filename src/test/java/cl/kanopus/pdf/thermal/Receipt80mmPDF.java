@@ -2,7 +2,7 @@
  * !--
  * For support and inquiries regarding this library, please contact:
  *   soporte@kanopus.cl
- * 
+ *
  * Project website:
  *   https://www.kanopus.cl
  * %%
@@ -11,9 +11,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,7 +27,6 @@ import cl.kanopus.common.util.Utils;
 import cl.kanopus.pdf.DocumentPrinterException;
 import cl.kanopus.pdf.FontFamily;
 import com.itextpdf.text.BaseColor;
-
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
 
@@ -39,15 +38,14 @@ public class Receipt80mmPDF extends AbstractPrint80mm {
 
     public ByteArrayOutputStream generateOutput() throws Exception {
 
-        //HEADER
+        // HEADER
         drawRectangle(13, getPositionY() + Space.LOW.size, 180, 35, BaseColor.BLACK, 1);
         println("ELECTRONIC RECEIPT", Align.CENTER);
         println("No. 12345", Align.CENTER);
         println("S.I.I. - SANTIAGO CENTER", Align.CENTER);
         setPositionY(getPositionY() - Space.LOW.size);
 
-
-        //COMPANY INFO
+        // COMPANY INFO
         setFont(FontFamily.FONT_8_BLACK_BOLD);
         setSpace(Space.LOW);
         println("Kanopus Company SPA");
@@ -63,7 +61,7 @@ public class Receipt80mmPDF extends AbstractPrint80mm {
         println("Time: " + Utils.getTimeFormat(new Date()), Align.RIGHT);
         setPositionY(getPositionY() - Space.LOW.size);
 
-        //RECIPIENT
+        // RECIPIENT
         setFont(FontFamily.FONT_8_BLACK_BOLD);
         setSpace(Space.LOW);
         println("Customer:");
@@ -96,10 +94,12 @@ public class Receipt80mmPDF extends AbstractPrint80mm {
             setSpace(Space.NORMAL);
             print("CODE" + i);
             print(Utils.getNumberFormat(5), getPageWidth() - getMarginRight() - 90, Align.RIGHT);
-            print(Utils.getNumberFormat(100 * i), getPageWidth() - getMarginRight() - 50, Align.RIGHT);
+            print(
+                    Utils.getNumberFormat(100 * i),
+                    getPageWidth() - getMarginRight() - 50,
+                    Align.RIGHT);
             println(Utils.getNumberFormat(5 * 100 * i), Align.RIGHT);
         }
-
 
         /*
          * *************** TOTALS SECTION *****************
@@ -126,8 +126,8 @@ public class Receipt80mmPDF extends AbstractPrint80mm {
          * ***********************************************
          */
 
-        printPdf417("PDF417|TYPE:ELECTRONIC_RECEIPT|NO:12345|TAX_ID:12345678-9|DATE:2025-12-03|TIME:12:00|NET:100840|VAT:41960|TOTAL:142800|VERIFY:www.kanopus.cl/dte");
-
+        printPdf417(
+                "PDF417|TYPE:ELECTRONIC_RECEIPT|NO:12345|TAX_ID:12345678-9|DATE:2025-12-03|TIME:12:00|NET:100840|VAT:41960|TOTAL:142800|VERIFY:www.kanopus.cl/dte");
 
         setSpace(Space.LOW);
         setFont(FontFamily.FONT_8_BLACK_BOLD);
@@ -137,5 +137,4 @@ public class Receipt80mmPDF extends AbstractPrint80mm {
         println("");
         return super.close();
     }
-
 }

@@ -23,20 +23,19 @@
  */
 package cl.kanopus.pdf.integration;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.parser.PdfTextExtractor;
+import java.io.ByteArrayOutputStream;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 class PDFIntegrationTest {
-    
+
     @Test
     void testGeneratePdfAndExtractText() throws Exception {
         String content = "Unique test text 12345";
@@ -59,7 +58,9 @@ class PDFIntegrationTest {
         try {
             String extracted = PdfTextExtractor.getTextFromPage(reader, 1);
             assertNotNull(extracted);
-            assertTrue(extracted.contains("Unique test text 12345"), "Extracted text should contain the inserted content");
+            assertTrue(
+                    extracted.contains("Unique test text 12345"),
+                    "Extracted text should contain the inserted content");
         } finally {
             reader.close();
         }

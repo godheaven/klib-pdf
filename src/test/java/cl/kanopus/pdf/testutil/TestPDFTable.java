@@ -32,7 +32,8 @@ public class TestPDFTable extends PDFTable {
     public TestPDFTable(int numColumns, float totalHeight) {
         super(numColumns);
         this.totalHeight = totalHeight;
-        // Set default total widths to avoid iText runtime exception "table width must be greater than zero"
+        // Set default total widths to avoid iText runtime exception "table width must be greater
+        // than zero"
         float[] widths = new float[numColumns];
         for (int i = 0; i < numColumns; i++) widths[i] = 100f;
         this.setTotalWidth(widths);
