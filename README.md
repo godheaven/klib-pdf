@@ -23,7 +23,7 @@ Add the dependency to your `pom.xml`:
 <dependency>
 	<groupId>cl.kanopus.util</groupId>
 	<artifactId>klib-pdf</artifactId>
-	<version>4.03.1</version>
+	<version>4.04.0</version>
 </dependency>
 ```
 
