@@ -58,8 +58,7 @@ abstract class AbstractThermal {
     private Font font = FontFamily.FONT_8_BLACK_NORMAL;
     private Space space = Space.NORMAL;
 
-    protected AbstractThermal(int pageWidth, int pageHeight, int marginLeft, int marginRight)
-            throws DocumentPrinterException {
+    protected AbstractThermal(int pageWidth, int pageHeight, int marginLeft, int marginRight) throws DocumentPrinterException {
         try {
             this.pageWidth = pageWidth;
             this.marginLeft = marginLeft;
@@ -198,8 +197,7 @@ abstract class AbstractThermal {
     private void printText(String text, int positionX, boolean automaticNewLine, Align align) {
         if (text != null) {
             Phrase phrase = new Phrase(text, font);
-            ColumnText.showTextAligned(
-                    this.canvas, align.position, phrase, positionX, positionY, 0);
+            ColumnText.showTextAligned(this.canvas, align.position, phrase, positionX, positionY, 0);
             positionY = automaticNewLine ? positionY - space.size : positionY;
         }
     }
@@ -209,14 +207,12 @@ abstract class AbstractThermal {
     }
 
     protected void printLine(int leftX, int rigthX, Align align, boolean bold) {
-        LineSeparator lineSeparator =
-                new LineSeparator(bold ? 1 : 0, 100, BaseColor.BLACK, align.position, 0);
+        LineSeparator lineSeparator = new LineSeparator(bold ? 1 : 0, 100, BaseColor.BLACK, align.position, 0);
         lineSeparator.drawLine(this.canvas, leftX, rigthX, positionY);
         positionY = positionY - space.size;
     }
 
-    protected void drawRectangle(
-            float x, float y, float width, float height, BaseColor color, int lineWidth) {
+    protected void drawRectangle(float x, float y, float width, float height, BaseColor color, int lineWidth) {
         this.canvas.saveState();
         PdfGState state = new PdfGState();
         state.setFillOpacity(0);
@@ -232,8 +228,7 @@ abstract class AbstractThermal {
         return cm * 10;
     }
 
-    protected void printBarcode(String code, int absoluteX, int absoluteY)
-            throws DocumentPrinterException {
+    protected void printBarcode(String code, int absoluteX, int absoluteY) throws DocumentPrinterException {
 
         try {
             // --- Visual parameters ---
@@ -245,9 +240,7 @@ abstract class AbstractThermal {
             hints.put(EncodeHintType.MARGIN, 0); // No extra white margin
 
             // --- Generate barcode (Code 39) ---
-            BitMatrix bitMatrix =
-                    new Code39Writer()
-                            .encode(code, BarcodeFormat.CODE_39, widthPx, heightPx, hints);
+            BitMatrix bitMatrix = new Code39Writer().encode(code, BarcodeFormat.CODE_39, widthPx, heightPx, hints);
 
             BufferedImage barcodeImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
 
@@ -259,13 +252,11 @@ abstract class AbstractThermal {
             document.add(image);
 
         } catch (IOException | DocumentException e) {
-            throw new DocumentPrinterException(
-                    "It is not possible to generate the barcode: " + code, e);
+            throw new DocumentPrinterException("It is not possible to generate the barcode: " + code, e);
         }
     }
 
-    private Image bufferedImageToITextImage(BufferedImage bufferedImage)
-            throws IOException, DocumentException {
+    private Image bufferedImageToITextImage(BufferedImage bufferedImage) throws IOException, DocumentException {
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             ImageIO.write(bufferedImage, "png", output);
             return Image.getInstance(output.toByteArray());
@@ -290,8 +281,7 @@ abstract class AbstractThermal {
             printImage(image);
             setPositionY((int) (imagePositionY) - Space.NORMAL.size);
         } catch (BadElementException ex) {
-            throw new DocumentPrinterException(
-                    "It is not possible to generate the barcode39: " + code, ex);
+            throw new DocumentPrinterException("It is not possible to generate the barcode39: " + code, ex);
         }
     }
 
@@ -307,9 +297,7 @@ abstract class AbstractThermal {
             hints.put(EncodeHintType.MARGIN, 0); // No extra white margin
 
             // --- Generate barcode (Code 39) ---
-            BitMatrix bitMatrix =
-                    new Code39Writer()
-                            .encode(code, BarcodeFormat.CODE_39, widthPx, heightPx, hints);
+            BitMatrix bitMatrix = new Code39Writer().encode(code, BarcodeFormat.CODE_39, widthPx, heightPx, hints);
 
             BufferedImage barcodeImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
 
@@ -320,8 +308,7 @@ abstract class AbstractThermal {
             return image;
 
         } catch (IOException | DocumentException e) {
-            throw new DocumentPrinterException(
-                    "It is not possible to generate the barcode: " + code, e);
+            throw new DocumentPrinterException("It is not possible to generate the barcode: " + code, e);
         }
     }
 

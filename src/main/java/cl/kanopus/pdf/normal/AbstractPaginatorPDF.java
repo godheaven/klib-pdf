@@ -73,10 +73,10 @@ public abstract class AbstractPaginatorPDF<T> extends AbstractPrintNormal {
 
     protected abstract void header() throws DocumentPrinterException;
 
-    protected abstract PDFTable createTableItems(int section, List<T> sublist)
-            throws DocumentPrinterException;
+    protected abstract PDFTable createTableItems(int section, List<T> sublist) throws DocumentPrinterException;
 
-    protected void footer() throws DocumentPrinterException {}
+    protected void footer() throws DocumentPrinterException {
+    }
 
     public final ByteArrayOutputStream generateOutput() throws DocumentPrinterException {
         header();
@@ -95,20 +95,13 @@ public abstract class AbstractPaginatorPDF<T> extends AbstractPrintNormal {
         }
         footer();
         if (printDateOfGeneration) {
-            printAbsolute(
-                    "Documento generado con fecha: "
-                            + Utils.getDateTimeFormat(LocalDateTime.now(), "dd MMMM yyyy HH:mm:ss"),
-                    10,
-                    30,
-                    FontFamily.FONT_7_BLACK_NORMAL);
+            printAbsolute("Documento generado con fecha: " + Utils.getDateTimeFormat(LocalDateTime.now(), "dd MMMM yyyy HH:mm:ss"), 10, 30, FontFamily.FONT_7_BLACK_NORMAL);
         }
 
         return close();
     }
 
-    private void generateBody(
-            Header customHeader, int currentPage, int totalPages, int section, List<T> sl)
-            throws DocumentPrinterException {
+    private void generateBody(Header customHeader, int currentPage, int totalPages, int section, List<T> sl) throws DocumentPrinterException {
         if (customHeader != null) {
             customHeader.print();
         }

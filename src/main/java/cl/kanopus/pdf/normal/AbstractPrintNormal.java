@@ -105,8 +105,7 @@ public abstract class AbstractPrintNormal {
         }
     }
 
-    protected AbstractPrintNormal(PdfNumber orientation, int pageWidth, int pageHeight, int margin)
-            throws DocumentPrinterException {
+    protected AbstractPrintNormal(PdfNumber orientation, int pageWidth, int pageHeight, int margin) throws DocumentPrinterException {
         try {
             this.document = new Document(new Rectangle(pageWidth, pageHeight));
             this.document.setMargins(margin, margin, margin, (margin == 0) ? 0 : 5);
@@ -224,17 +223,10 @@ public abstract class AbstractPrintNormal {
         printText(text, positionX, false, font, align);
     }
 
-    private void printText(
-            String text, int positionX, boolean automaticNewLine, Font font, Align align) {
+    private void printText(String text, int positionX, boolean automaticNewLine, Font font, Align align) {
         if (text != null) {
             Phrase phrase = new Phrase(text.trim(), (font == null) ? DEFAULT_FONT : font);
-            ColumnText.showTextAligned(
-                    this.canvas,
-                    (align == null) ? Align.LEFT.id : align.id,
-                    phrase,
-                    positionX,
-                    positionY,
-                    0);
+            ColumnText.showTextAligned(this.canvas, (align == null) ? Align.LEFT.id : align.id, phrase, positionX, positionY, 0);
         }
         positionY = automaticNewLine ? positionY - space.size : positionY;
     }
@@ -243,8 +235,7 @@ public abstract class AbstractPrintNormal {
         printlnSplit(maxLineSize, text, positionX, DEFAULT_FONT);
     }
 
-    protected void printlnSplit(
-            int maxLineSize, String text, int positionX, int positionY, Font font) {
+    protected void printlnSplit(int maxLineSize, String text, int positionX, int positionY, Font font) {
         setPositionY(positionY);
         printlnSplit(maxLineSize, text, positionX, font);
     }
@@ -272,8 +263,7 @@ public abstract class AbstractPrintNormal {
 
     protected void printAbsolute(String text, float x, float y, Font font, Align align) {
         Phrase phrase = new Phrase(text, (font == null) ? DEFAULT_FONT : font);
-        ColumnText.showTextAligned(
-                this.canvas, (align == null) ? Align.LEFT.id : align.id, phrase, x, y, 0);
+        ColumnText.showTextAligned(this.canvas, (align == null) ? Align.LEFT.id : align.id, phrase, x, y, 0);
     }
 
     protected void printLine() {
@@ -281,15 +271,13 @@ public abstract class AbstractPrintNormal {
     }
 
     protected void printLine(int leftX, int rigthX, Align align, boolean bold) {
-        LineSeparator lineSeparator =
-                new LineSeparator(bold ? 1 : 0, 100, BaseColor.BLACK, align.id, 0);
+        LineSeparator lineSeparator = new LineSeparator(bold ? 1 : 0, 100, BaseColor.BLACK, align.id, 0);
         lineSeparator.drawLine(this.canvas, leftX, rigthX, positionY);
         positionY = positionY - space.size;
     }
 
     protected void printLine(int leftX, int rigthX, int y, boolean bold) {
-        LineSeparator lineSeparator =
-                new LineSeparator(bold ? 1 : 0, 100, BaseColor.BLACK, Element.ALIGN_LEFT, 0);
+        LineSeparator lineSeparator = new LineSeparator(bold ? 1 : 0, 100, BaseColor.BLACK, Element.ALIGN_LEFT, 0);
         lineSeparator.drawLine(this.canvas, leftX, rigthX, y);
     }
 
@@ -297,8 +285,7 @@ public abstract class AbstractPrintNormal {
         printLine(leftX, rigthX, y, false);
     }
 
-    protected void drawRectangleFixed(
-            float x, float y, float width, float height, BaseColor color, int lineWidth) {
+    protected void drawRectangleFixed(float x, float y, float width, float height, BaseColor color, int lineWidth) {
         this.canvas.saveState();
         PdfGState state = new PdfGState();
         state.setFillOpacity(0);
@@ -310,8 +297,7 @@ public abstract class AbstractPrintNormal {
         this.canvas.restoreState();
     }
 
-    protected void drawRectangle(
-            float x, float y, float width, float height, BaseColor color, int lineWidth) {
+    protected void drawRectangle(float x, float y, float width, float height, BaseColor color, int lineWidth) {
         this.canvas.saveState();
         PdfGState state = new PdfGState();
         state.setFillOpacity(0);
@@ -327,13 +313,11 @@ public abstract class AbstractPrintNormal {
         return cm * 10;
     }
 
-    protected void printBarcode(String code, int absoluteX, int absoluteY)
-            throws DocumentPrinterException {
+    protected void printBarcode(String code, int absoluteX, int absoluteY) throws DocumentPrinterException {
         printBarcode(code, absoluteX, absoluteY, Scale.NORMAL);
     }
 
-    protected void printBarcode(String code, int absoluteX, int absoluteY, Scale scale)
-            throws DocumentPrinterException {
+    protected void printBarcode(String code, int absoluteX, int absoluteY, Scale scale) throws DocumentPrinterException {
 
         try {
             // --- Visual parameters ---
@@ -345,9 +329,7 @@ public abstract class AbstractPrintNormal {
             hints.put(EncodeHintType.MARGIN, 0); // No extra white margin
 
             // --- Generate barcode (Code 39) ---
-            BitMatrix bitMatrix =
-                    new Code39Writer()
-                            .encode(code, BarcodeFormat.CODE_39, widthPx, heightPx, hints);
+            BitMatrix bitMatrix = new Code39Writer().encode(code, BarcodeFormat.CODE_39, widthPx, heightPx, hints);
 
             BufferedImage barcodeImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
 
@@ -359,26 +341,22 @@ public abstract class AbstractPrintNormal {
             document.add(image);
 
         } catch (IOException | DocumentException e) {
-            throw new DocumentPrinterException(
-                    "It is not possible to generate the barcode: " + code, e);
+            throw new DocumentPrinterException("It is not possible to generate the barcode: " + code, e);
         }
     }
 
-    private Image bufferedImageToITextImage(BufferedImage bufferedImage)
-            throws IOException, DocumentException {
+    private Image bufferedImageToITextImage(BufferedImage bufferedImage) throws IOException, DocumentException {
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             ImageIO.write(bufferedImage, "png", output);
             return Image.getInstance(output.toByteArray());
         }
     }
 
-    protected void printPdf417(String code, int absoluteX, int absoluteY)
-            throws DocumentPrinterException {
+    protected void printPdf417(String code, int absoluteX, int absoluteY) throws DocumentPrinterException {
         printPdf417(code, absoluteX, absoluteY, 184, 72);
     }
 
-    protected void printPdf417(String code, int absoluteX, int absoluteY, float width, float height)
-            throws DocumentPrinterException {
+    protected void printPdf417(String code, int absoluteX, int absoluteY, float width, float height) throws DocumentPrinterException {
         try {
             BarcodePDF417 pdf417 = new BarcodePDF417();
             pdf417.setCodeRows(5);
@@ -394,8 +372,7 @@ public abstract class AbstractPrintNormal {
             printImage(image);
             setPositionY((int) (absoluteY) - (int) image.getHeight());
         } catch (BadElementException ex) {
-            throw new DocumentPrinterException(
-                    "It is not possible to generate the barcode39: " + code, ex);
+            throw new DocumentPrinterException("It is not possible to generate the barcode39: " + code, ex);
         }
     }
 
@@ -426,8 +403,7 @@ public abstract class AbstractPrintNormal {
             ImageIO.write(bufferedImage, "png", baosImage);
             return Image.getInstance(baosImage.toByteArray());
         } catch (BadElementException | IOException ex) {
-            throw new DocumentPrinterException(
-                    "It is not possible to insert the image into the document", ex);
+            throw new DocumentPrinterException("It is not possible to insert the image into the document", ex);
         }
     }
 }

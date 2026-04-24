@@ -39,7 +39,7 @@ class PDFTableTest {
 
         // After adding cells, number of rows should be >=1 and total width setting should accept
         // arrays
-        table.setTotalWidth(new float[] {100f, 200f});
+        table.setTotalWidth(new float[]{100f, 200f});
         assertEquals(2, table.getNumberOfColumns());
     }
 

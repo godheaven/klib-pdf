@@ -73,8 +73,7 @@ public class Receipt80mmPDF extends AbstractPrint80mm {
         setPositionY(getPositionY() - Space.LOW.size);
 
         /*
-         * **************** ITEMS ***********************
-         * *************************************************
+         * **************** ITEMS *********************** *************************************************
          */
         setPositionY(getPositionY() - Space.LOW.size);
         setFont(FontFamily.FONT_8_BLACK_BOLD);
@@ -94,16 +93,12 @@ public class Receipt80mmPDF extends AbstractPrint80mm {
             setSpace(Space.NORMAL);
             print("CODE" + i);
             print(Utils.getNumberFormat(5), getPageWidth() - getMarginRight() - 90, Align.RIGHT);
-            print(
-                    Utils.getNumberFormat(100 * i),
-                    getPageWidth() - getMarginRight() - 50,
-                    Align.RIGHT);
+            print(Utils.getNumberFormat(100 * i), getPageWidth() - getMarginRight() - 50, Align.RIGHT);
             println(Utils.getNumberFormat(5 * 100 * i), Align.RIGHT);
         }
 
         /*
-         * *************** TOTALS SECTION *****************
-         * ************************************************
+         * *************** TOTALS SECTION ***************** ************************************************
          */
         setFont(FontFamily.FONT_8_BLACK_NORMAL);
         setPositionY(getPositionY() - Space.LOW.size);
@@ -122,12 +117,10 @@ public class Receipt80mmPDF extends AbstractPrint80mm {
         println(Utils.getNumberFormat(142800), Align.RIGHT);
 
         /*
-         * ************ ELECTRONIC STAMP *****************
-         * ***********************************************
+         * ************ ELECTRONIC STAMP ***************** ***********************************************
          */
 
-        printPdf417(
-                "PDF417|TYPE:ELECTRONIC_RECEIPT|NO:12345|TAX_ID:12345678-9|DATE:2025-12-03|TIME:12:00|NET:100840|VAT:41960|TOTAL:142800|VERIFY:www.kanopus.cl/dte");
+        printPdf417("PDF417|TYPE:ELECTRONIC_RECEIPT|NO:12345|TAX_ID:12345678-9|DATE:2025-12-03|TIME:12:00|NET:100840|VAT:41960|TOTAL:142800|VERIFY:www.kanopus.cl/dte");
 
         setSpace(Space.LOW);
         setFont(FontFamily.FONT_8_BLACK_BOLD);

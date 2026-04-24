@@ -54,8 +54,7 @@ class AbstractPaginatorPDFTest {
         }
 
         @Override
-        protected PDFTable createTableItems(int section, List<String> sublist)
-                throws DocumentPrinterException {
+        protected PDFTable createTableItems(int section, List<String> sublist) throws DocumentPrinterException {
             createdSections++;
             TestPDFTable table = new TestPDFTable(3, 10f);
             for (String s : sublist) {
@@ -77,7 +76,8 @@ class AbstractPaginatorPDFTest {
     @Test
     void generateOutput_ShouldProduceStream_WhenItemsPresent() throws Exception {
         List<String> items = new ArrayList<>();
-        for (int i = 0; i < 7; i++) items.add("item" + i);
+        for (int i = 0; i < 7; i++)
+            items.add("item" + i);
 
         TestPaginator paginator = new TestPaginator(items, 3);
         ByteArrayOutputStream baos = paginator.generateOutput();

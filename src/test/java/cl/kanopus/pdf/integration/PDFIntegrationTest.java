@@ -58,9 +58,7 @@ class PDFIntegrationTest {
         try {
             String extracted = PdfTextExtractor.getTextFromPage(reader, 1);
             assertNotNull(extracted);
-            assertTrue(
-                    extracted.contains("Unique test text 12345"),
-                    "Extracted text should contain the inserted content");
+            assertTrue(extracted.contains("Unique test text 12345"), "Extracted text should contain the inserted content");
         } finally {
             reader.close();
         }
