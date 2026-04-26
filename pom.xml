@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>cl.kanopus</groupId>
 		<artifactId>kanopus-core-parent</artifactId>
-		<version>4.06.0</version>
+		<version>4.06.3</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
@@ -27,6 +27,7 @@
 			<artifactId>core</artifactId>
 			<version>3.5.4</version>
 		</dependency>
+	
 		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>javase</artifactId>
