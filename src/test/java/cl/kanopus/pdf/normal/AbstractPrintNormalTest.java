@@ -25,15 +25,20 @@ package cl.kanopus.pdf.normal;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cl.kanopus.pdf.DocumentPrinterException;
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.pdf.PdfContentByte;
-import java.awt.*;
+import cl.kanopus.pdf.FontFamily;
+import cl.kanopus.pdf.testutil.PdfTestUtils;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openpdf.text.Image;
+import org.openpdf.text.pdf.PdfContentByte;
 
 class AbstractPrintNormalTest {
 
@@ -42,6 +47,10 @@ class AbstractPrintNormalTest {
     static class TestPrintNormal extends AbstractPrintNormal {
         TestPrintNormal() throws DocumentPrinterException {
             super();
+        }
+
+        TestPrintNormal(int width, int height) throws DocumentPrinterException {
+            super(null, width, height, 10);
         }
 
         PdfContentByte getCanvasPublic() {
@@ -93,15 +102,15 @@ class AbstractPrintNormalTest {
 
     @Test
     void drawRectangle_shouldNotThrow() {
-        assertDoesNotThrow(() -> printer.drawRectangle(10f, 10f, 20f, 5f, BaseColor.BLACK, 1));
+        assertDoesNotThrow(() -> printer.drawRectangle(10f, 10f, 20f, 5f, Color.BLACK, 1));
     }
 
     @Test
     void printImage_AddImage_shouldAdjustPositionY_WhenHeightUsed() throws Exception {
-        // create a small buffered image and convert to iText Image via reflection helper
+        // create a small buffered image and convert it to an OpenPDF Image
         BufferedImage bi = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = bi.createGraphics();
-        g.setColor(java.awt.Color.RED);
+        g.setColor(Color.RED);
         g.fillRect(0, 0, 10, 10);
         g.dispose();
 
@@ -111,5 +120,93 @@ class AbstractPrintNormalTest {
         // exception
         assertDoesNotThrow(() -> printer.printImage(image));
         assertEquals(before, printer.getPositionY());
+    }
+
+    @Test
+    void defaultGettersMatchConstants() {
+        assertEquals(AbstractPrintNormal.PAGE_WIDTH, printer.getPageWidth());
+        assertEquals(AbstractPrintNormal.PAGE_HEIGHT, printer.getPageHeight());
+        assertEquals(AbstractPrintNormal.MARGIN_LEFT, printer.getMarginLeft());
+        assertEquals(AbstractPrintNormal.MARGIN_RIGHT, printer.getMarginRight());
+    }
+
+    @Test
+    void customSizeAndMarginsAreReported() throws Exception {
+        TestPrintNormal custom = new TestPrintNormal(300, 400);
+        assertEquals(300, custom.getPageWidth());
+        assertEquals(400, custom.getPageHeight());
+        custom.setTextMargins(15, 25);
+        assertEquals(15, custom.getMarginLeft());
+        assertEquals(25, custom.getMarginRight());
+        custom.setPositionY(380);
+        custom.println("custom");
+        custom.printLine();
+        byte[] pdf = custom.close().toByteArray();
+        assertTrue(PdfTestUtils.allText(pdf).contains("custom"));
+    }
+
+    @Test
+    void code39BarcodeIsDrawn() throws Exception {
+        printer.printBarcode("ABC123", 20, 300);
+        printer.printBarcode("XYZ", 20, 200, AbstractPrintNormal.Scale.BIG);
+        printer.printBarcode("XYZ", 20, 100, null);
+        byte[] pdf = printer.close().toByteArray();
+        PdfTestUtils.write(pdf, "normal-code39.pdf");
+        assertEquals(3, PdfTestUtils.imageCount(pdf, 1));
+        assertThrows(DocumentPrinterException.class, () -> new TestPrintNormal().printBarcode("ñ", 0, 0));
+    }
+
+    @Test
+    void pdf417OnNormalPageUsesScaledHeight() throws Exception {
+        printer.printPdf417("TED|ÑANDÚ|12345", 50, 400);
+        assertEquals(400 - 72, printer.getPositionY());
+        printer.printPdf417("TED|€ Ω", 50, 200, 200, 60);
+        assertEquals(200 - 60, printer.getPositionY());
+        byte[] pdf = printer.close().toByteArray();
+        PdfTestUtils.write(pdf, "normal-pdf417.pdf");
+        assertEquals(2, PdfTestUtils.imageCount(pdf, 1));
+    }
+
+    @Test
+    void pdf417WithUnsupportedCharsetThrows() {
+        DocumentPrinterException ex = assertThrows(DocumentPrinterException.class, () -> printer.printPdf417("Ω", 0, 0, 10, 10, StandardCharsets.ISO_8859_1));
+        assertTrue(ex.getMessage().contains("PDF417"), ex.getMessage());
+    }
+
+    @Test
+    void printOverloadsAndNullsAreHandled() throws Exception {
+        int before = printer.getPositionY();
+        printer.print("a");
+        printer.print("b", 10);
+        printer.print("c", 10, AbstractPrintNormal.Align.RIGHT);
+        printer.print("d", 10, FontFamily.FONT_8_BLACK_BOLD);
+        printer.print("e", 10, FontFamily.FONT_8_BLACK_BOLD, AbstractPrintNormal.Align.CENTER);
+        printer.printAbsolute(null, 10, 10);
+        printer.printAbsolute("f", 10, 10, AbstractPrintNormal.Align.CENTER);
+        printer.printAbsolute("g", 10, 10, FontFamily.FONT_8_BLACK_BOLD);
+        assertEquals(before, printer.getPositionY());
+
+        printer.println("h", FontFamily.FONT_8_BLACK_BOLD);
+        printer.println("i", 10);
+        printer.println("j", 10, AbstractPrintNormal.Align.RIGHT);
+        printer.println("k", 10, FontFamily.FONT_8_BLACK_BOLD, AbstractPrintNormal.Align.CENTER);
+        assertEquals(before - 4 * printer.getSpace().getSize(), printer.getPositionY());
+
+        printer.printLine(0, 100, null, true);
+        printer.printLine(0, 100, 50);
+        printer.drawRectangleFixed(0, 0, 10, 10, null, 1);
+        printer.newLine();
+        printer.printlnSplit(10, "one two three four five", 10);
+        printer.printlnSplit(10, "one two", 10, 300, FontFamily.FONT_8_BLACK_NORMAL);
+        printer.printlnSplit(10, null, 10);
+        assertTrue(printer.getPositionY() < 300);
+        printer.newPage();
+        printer.println("second page");
+
+        byte[] pdf = printer.close().toByteArray();
+        assertEquals(2, PdfTestUtils.pagesText(pdf).size());
+        // close is idempotent
+        assertEquals(pdf.length, printer.close().size());
+        printer.closeQuietly();
     }
 }

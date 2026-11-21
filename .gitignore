@@ -86,5 +86,9 @@ hs_err_pid*
 # Archivos markdown generados por Copilot — excluir
 copilot*.md
 
+# Test output written to the module root by old versions of the tests
+/test.pdf
+/*.pdf
+
 # Fin de .gitignore
 

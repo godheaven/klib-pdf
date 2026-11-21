@@ -24,9 +24,14 @@
 package cl.kanopus.pdf.normal.table;
 
 import cl.kanopus.pdf.FontFamily;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
+import java.awt.Color;
+import org.openpdf.text.DocumentException;
+import org.openpdf.text.Element;
+import org.openpdf.text.Font;
+import org.openpdf.text.Image;
+import org.openpdf.text.Phrase;
+import org.openpdf.text.pdf.PdfPCell;
+import org.openpdf.text.pdf.PdfPTable;
 
 public class PDFTable extends PdfPTable {
 
@@ -62,7 +67,7 @@ public class PDFTable extends PdfPTable {
     // create cells
     private PdfPCell createLabel(String text, int horizontalAlignment, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
-        cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+        cell.setBackgroundColor(Color.LIGHT_GRAY);
         cell.setHorizontalAlignment(horizontalAlignment);
         return cell;
     }

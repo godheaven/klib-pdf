@@ -24,8 +24,13 @@
 package cl.kanopus.pdf.normal.table;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import cl.kanopus.pdf.FontFamily;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
 import org.junit.jupiter.api.Test;
+import org.openpdf.text.Image;
 
 class PDFTableTest {
 
@@ -44,14 +49,25 @@ class PDFTableTest {
     }
 
     @Test
-    void testCreateValueCellWithImage() {
-        PDFTable table = new PDFTable(1);
-        // create a simple PdfPCell and add directly via createValueCell(Image) is overloaded with
-        // Image
-        // we can't easily create com.itextpdf.text.Image without files; so we test other public
-        // APIs
-        table.createValueCell("text");
-        assertEquals(1, table.getNumberOfColumns());
+    void testCreateValueCellWithImage() throws Exception {
+        PDFTable table = new PDFTable(2);
+        Image image = Image.getInstance(new BufferedImage(4, 4, BufferedImage.TYPE_INT_RGB), null);
+        table.createValueCell(image);
+        table.createValueCell("text", PDFTable.Align.RIGHT);
+        table.createValueCellWithColspan("colspan", 2);
+        table.createValueCellWithColspan("colspan", 2, PDFTable.Align.LEFT, FontFamily.FONT_7_BLACK_BOLD);
+        table.createValueCellWithRowspan("rowspan", 1, PDFTable.Align.RIGHT);
+        table.createLabelCellWithRowspan("label", 1);
+        table.createLabelCellWithColspan("label", 2, PDFTable.Align.RIGHT);
+        table.createLabelCellWithColspanAndRowspan("label", 2, 1);
+        assertEquals(2, table.getNumberOfColumns());
+        assertEquals(Color.LIGHT_GRAY, table.getRow(table.size() - 1).getCells()[0].getBackgroundColor());
+    }
+
+    @Test
+    void invalidWidthsAreRejected() {
+        PDFTable table = new PDFTable(2);
+        assertThrows(IllegalArgumentException.class, () -> table.setTotalWidth(new float[]{100f}));
     }
 
     @Test

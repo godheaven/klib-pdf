@@ -26,11 +26,11 @@ package cl.kanopus.pdf.thermal;
 import cl.kanopus.common.util.Utils;
 import cl.kanopus.pdf.DocumentPrinterException;
 import cl.kanopus.pdf.FontFamily;
-import com.itextpdf.text.BaseColor;
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
 
-public class Receipt80mmPDF extends AbstractPrint80mm {
+class Receipt80mmPDF extends AbstractPrint80mm {
 
     public Receipt80mmPDF() throws DocumentPrinterException {
         super(calcularHeight(10));
@@ -39,7 +39,7 @@ public class Receipt80mmPDF extends AbstractPrint80mm {
     public ByteArrayOutputStream generateOutput() throws Exception {
 
         // HEADER
-        drawRectangle(13, getPositionY() + Space.LOW.size, 180, 35, BaseColor.BLACK, 1);
+        drawRectangle(13, getPositionY() + Space.LOW.size, 180, 35, Color.BLACK, 1);
         println("ELECTRONIC RECEIPT", Align.CENTER);
         println("No. 12345", Align.CENTER);
         println("S.I.I. - SANTIAGO CENTER", Align.CENTER);

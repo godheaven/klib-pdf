@@ -42,13 +42,31 @@ public abstract class AbstractPaginatorPDF<T> extends AbstractPrintNormal {
     private int index = 0;
     private boolean printDateOfGeneration = false;
 
+    /**
+     * @param list
+     *            items to print ({@code null} is treated as an empty list)
+     * @param limit
+     *            maximum number of items per page, must be greater than zero
+     * @throws IllegalArgumentException
+     *             if {@code limit <= 0}
+     */
     protected AbstractPaginatorPDF(List<T> list, int limit) throws DocumentPrinterException {
         super();
         this.lists.add(new CustomList<>(null, list, limit));
     }
 
+    /**
+     * @param lists
+     *            sections to print, each one paginated with its own limit ({@code null} is treated as empty)
+     */
     protected AbstractPaginatorPDF(List<CustomList<T>> lists) throws DocumentPrinterException {
-        this.lists.addAll(lists);
+        if (lists != null) {
+            for (CustomList<T> custom : lists) {
+                if (custom != null) {
+                    this.lists.add(custom);
+                }
+            }
+        }
     }
 
     public void setAlwaysPrintHeader(boolean alwaysPrintHeader) {
@@ -78,27 +96,35 @@ public abstract class AbstractPaginatorPDF<T> extends AbstractPrintNormal {
     protected void footer() throws DocumentPrinterException {
     }
 
+    /**
+     * Generates the document: {@link #header()} is printed on the first page (and on every page when {@code alwaysPrintHeader}), {@link #footer()} on the last page (and on every page when {@code alwaysPrintFooter}), exactly once per page. The document is closed even if generation fails.
+     */
     public final ByteArrayOutputStream generateOutput() throws DocumentPrinterException {
-        header();
-        int page = 1;
-        int section = 1;
-        int totalPages = calculePages();
+        try {
+            header();
+            int page = 1;
+            int section = 1;
+            int totalPages = calculePages();
 
-        for (CustomList<T> custom : lists) {
-            index = 0;
-            List<List<T>> sublist = Utils.chunkList(custom.getList(), custom.getLimit());
-            for (List<T> sl : sublist) {
-                generateBody(custom.header, page, totalPages, section, sl);
-                page++;
+            for (CustomList<T> custom : lists) {
+                index = 0;
+                List<List<T>> sublist = Utils.chunkList(custom.getList(), custom.getLimit());
+                for (List<T> sl : sublist) {
+                    generateBody(custom.header, page, totalPages, section, sl);
+                    page++;
+                }
+                section++;
             }
-            section++;
-        }
-        footer();
-        if (printDateOfGeneration) {
-            printAbsolute("Documento generado con fecha: " + Utils.getDateTimeFormat(LocalDateTime.now(), "dd MMMM yyyy HH:mm:ss"), 10, 30, FontFamily.FONT_7_BLACK_NORMAL);
-        }
+            footer();
+            if (printDateOfGeneration) {
+                printAbsolute("Documento generado con fecha: " + Utils.getDateTimeFormat(LocalDateTime.now(), "dd MMMM yyyy HH:mm:ss"), 10, 30, FontFamily.FONT_7_BLACK_NORMAL);
+            }
 
-        return close();
+            return close();
+        } catch (DocumentPrinterException | RuntimeException ex) {
+            closeQuietly();
+            throw ex;
+        }
     }
 
     private void generateBody(Header customHeader, int currentPage, int totalPages, int section, List<T> sl) throws DocumentPrinterException {
@@ -109,19 +135,19 @@ public abstract class AbstractPaginatorPDF<T> extends AbstractPrintNormal {
         pdfTableItems.writeSelectedRows(0, -1, positionX, getPositionY() - 5, super.getCanvas());
 
         if (alwaysShowTotalPages || (totalPages > 1)) {
-            printAbsolute("Página " + currentPage + " de " + totalPages, 570, 30, Align.RIGHT);
+            printAbsolute("Página " + currentPage + " de " + totalPages, getPageWidth() - 25, 30, Align.RIGHT);
         }
 
         setPositionY(getPositionY() - (int) pdfTableItems.getTotalHeight() - Space.HIGHT.getSize());
 
         if (currentPage != totalPages) {
+            // the footer of the current page must be printed before moving to the next one
+            if (alwaysPrintFooter) {
+                footer();
+            }
             newPage();
             if (alwaysPrintHeader) {
                 header();
-            }
-
-            if (alwaysPrintFooter) {
-                footer();
             }
         }
     }
@@ -145,9 +171,16 @@ public abstract class AbstractPaginatorPDF<T> extends AbstractPrintNormal {
         private final int limit;
         private final Header header;
 
+        /**
+         * @throws IllegalArgumentException
+         *             if {@code limit <= 0}
+         */
         public CustomList(Header header, List<K> list, int limit) {
+            if (limit <= 0) {
+                throw new IllegalArgumentException("The page limit must be greater than zero: " + limit);
+            }
             this.header = header;
-            this.list = list;
+            this.list = (list == null) ? List.of() : list;
             this.limit = limit;
         }
 
