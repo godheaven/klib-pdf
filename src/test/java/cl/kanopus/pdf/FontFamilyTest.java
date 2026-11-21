@@ -25,9 +25,14 @@ package cl.kanopus.pdf;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.itextpdf.text.Font;
+import java.awt.Color;
 import org.junit.jupiter.api.Test;
+import org.openpdf.text.Font;
+import org.openpdf.text.pdf.BaseFont;
 
 class FontFamilyTest {
 
@@ -49,10 +54,55 @@ class FontFamilyTest {
     }
 
     @Test
-    void testFontSizes() {
-        Font f = FontFamily.FONT_6_BLACK_NORMAL;
-        assertEquals(6, f.getSize(), 0.0);
-
+    void testFontSizesAndColors() {
+        assertEquals(6, FontFamily.FONT_6_BLACK_NORMAL.getSize(), 0.0);
         assertEquals(40, FontFamily.FONT_40_GRAY_BOLD.getSize(), 0.0);
+        assertEquals(Color.RED, FontFamily.FONT_16_RED_BOLD.getColor());
+        assertEquals(Color.GRAY, FontFamily.FONT_40_GRAY_BOLD.getColor());
+    }
+
+    @Test
+    void fontsUseEmbeddedUnicodeBaseFonts() {
+        BaseFont regular = FontFamily.FONT_10_BLACK_NORMAL.getBaseFont();
+        assertNotNull(regular);
+        assertEquals(BaseFont.IDENTITY_H, regular.getEncoding());
+        assertEquals(true, regular.charExists('Ω'));
+        assertEquals(true, regular.charExists('€'));
+        assertEquals("LiberationSans", regular.getPostscriptFontName());
+        assertEquals("LiberationSans-Bold", FontFamily.FONT_10_BLACK_BOLD.getBaseFont().getPostscriptFontName());
+        assertEquals("LiberationSans-Italic", FontFamily.FONT_9_BLACK_ITALIC.getBaseFont().getPostscriptFontName());
+        assertEquals("LiberationSans-BoldItalic", FontFamily.baseFont(Font.BOLDITALIC).getPostscriptFontName());
+        assertSame(regular, FontFamily.baseFont(Font.UNDEFINED));
+        // weight comes from the base font, OpenPDF must not simulate bold on top of it
+        assertEquals(Font.NORMAL, FontFamily.FONT_10_BLACK_BOLD.getStyle());
+    }
+
+    @Test
+    void constantsAreUnmodifiable() {
+        Font font = FontFamily.FONT_10_BLACK_NORMAL;
+        assertThrows(UnsupportedOperationException.class, () -> font.setSize(20));
+        assertThrows(UnsupportedOperationException.class, () -> font.setColor(Color.RED));
+        assertThrows(UnsupportedOperationException.class, () -> font.setColor(1, 2, 3));
+        assertThrows(UnsupportedOperationException.class, () -> font.setStyle(Font.BOLD));
+        assertThrows(UnsupportedOperationException.class, () -> font.setStyle("bold"));
+        assertThrows(UnsupportedOperationException.class, () -> font.setFamily("Courier"));
+        assertEquals(10, font.getSize(), 0.0);
+    }
+
+    @Test
+    void factoryReturnsIndependentMutableCopies() {
+        Font a = FontFamily.font(11, Font.BOLD | Font.UNDERLINE, null);
+        Font b = FontFamily.font(11, Font.BOLD, Color.BLUE);
+        assertNotSame(a, b);
+        assertEquals(Color.BLACK, a.getColor());
+        assertEquals(Font.UNDERLINE, a.getStyle());
+        a.setSize(15);
+        assertEquals(15, a.getSize(), 0.0);
+        assertEquals(11, b.getSize(), 0.0);
+
+        Font copy = new Font(FontFamily.FONT_8_BLACK_NORMAL);
+        copy.setColor(Color.GREEN);
+        assertEquals(Color.GREEN, copy.getColor());
+        assertEquals(Color.BLACK, FontFamily.FONT_8_BLACK_NORMAL.getColor());
     }
 }

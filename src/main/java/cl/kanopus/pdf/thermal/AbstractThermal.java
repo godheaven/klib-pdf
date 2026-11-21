@@ -24,30 +24,32 @@
 package cl.kanopus.pdf.thermal;
 
 import cl.kanopus.common.util.Utils;
+import cl.kanopus.pdf.Barcodes;
 import cl.kanopus.pdf.DocumentPrinterException;
 import cl.kanopus.pdf.FontFamily;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.oned.Code39Writer;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.*;
-import com.itextpdf.text.pdf.draw.LineSeparator;
-import java.awt.image.BufferedImage;
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.EnumMap;
+import java.nio.charset.Charset;
 import java.util.List;
-import java.util.Map;
-import javax.imageio.ImageIO;
+import org.openpdf.text.Document;
+import org.openpdf.text.DocumentException;
+import org.openpdf.text.Element;
+import org.openpdf.text.Font;
+import org.openpdf.text.Image;
+import org.openpdf.text.Phrase;
+import org.openpdf.text.Rectangle;
+import org.openpdf.text.pdf.ColumnText;
+import org.openpdf.text.pdf.PdfContentByte;
+import org.openpdf.text.pdf.PdfGState;
+import org.openpdf.text.pdf.PdfWriter;
+import org.openpdf.text.pdf.draw.LineSeparator;
 
 abstract class AbstractThermal {
 
     private Document document = null;
     private PdfContentByte canvas = null;
     private ByteArrayOutputStream baos = null;
+    private boolean closed = false;
 
     private final int pageWidth;
     private final int pageHeight;
@@ -126,8 +128,12 @@ abstract class AbstractThermal {
         this.positionY = positionY;
     }
 
+    /**
+     * @param font
+     *            the font used by the following prints; {@code null} restores the default 8pt font
+     */
     public void setFont(Font font) {
-        this.font = font;
+        this.font = (font == null) ? FontFamily.FONT_8_BLACK_NORMAL : font;
     }
 
     public void setSpace(Space space) {
@@ -159,13 +165,8 @@ abstract class AbstractThermal {
     }
 
     protected void println(String text, Align align) {
-        if (align == Align.LEFT) {
-            printText(text, marginLeft, true, align);
-        } else if (align == Align.CENTER) {
-            printText(text, getPageWidth() / 2, true, align);
-        } else if (align == Align.RIGHT) {
-            printText(text, getPageWidth() - getMarginRight(), true, align);
-        }
+        Align a = (align == null) ? Align.LEFT : align;
+        printText(text, positionFor(a), true, a);
     }
 
     protected void println(String text, int positionX, Align align) {
@@ -181,25 +182,31 @@ abstract class AbstractThermal {
     }
 
     protected void print(String text, Align align) {
-        if (align == Align.LEFT) {
-            printText(text, marginLeft, false, align);
-        } else if (align == Align.CENTER) {
-            printText(text, getPageWidth() / 2, false, align);
-        } else if (align == Align.RIGHT) {
-            printText(text, getPageWidth() - getMarginRight(), false, align);
-        }
+        Align a = (align == null) ? Align.LEFT : align;
+        printText(text, positionFor(a), false, a);
     }
 
     protected void print(String text, int positionX, Align align) {
         printText(text, positionX, false, align);
     }
 
+    private int positionFor(Align align) {
+        return switch (align) {
+            case CENTER -> getPageWidth() / 2;
+            case RIGHT -> getPageWidth() - getMarginRight();
+            default -> marginLeft;
+        };
+    }
+
+    /**
+     * Prints the text (if not null) and, for {@code println}, moves to the next line. A {@code null} text still advances the line, consistently with the normal page printer.
+     */
     private void printText(String text, int positionX, boolean automaticNewLine, Align align) {
         if (text != null) {
             Phrase phrase = new Phrase(text, font);
-            ColumnText.showTextAligned(this.canvas, align.position, phrase, positionX, positionY, 0);
-            positionY = automaticNewLine ? positionY - space.size : positionY;
+            ColumnText.showTextAligned(this.canvas, (align == null) ? Align.LEFT.position : align.position, phrase, positionX, positionY, 0);
         }
+        positionY = automaticNewLine ? positionY - space.size : positionY;
     }
 
     protected void printLine() {
@@ -207,17 +214,19 @@ abstract class AbstractThermal {
     }
 
     protected void printLine(int leftX, int rigthX, Align align, boolean bold) {
-        LineSeparator lineSeparator = new LineSeparator(bold ? 1 : 0, 100, BaseColor.BLACK, align.position, 0);
+        int alignment = (align == null) ? Element.ALIGN_CENTER : align.position;
+        LineSeparator lineSeparator = new LineSeparator(bold ? 1 : 0, 100, Color.BLACK, alignment, 0);
         lineSeparator.drawLine(this.canvas, leftX, rigthX, positionY);
         positionY = positionY - space.size;
     }
 
-    protected void drawRectangle(float x, float y, float width, float height, BaseColor color, int lineWidth) {
+    protected void drawRectangle(float x, float y, float width, float height, Color color, int lineWidth) {
+        Color stroke = (color == null) ? Color.BLACK : color;
         this.canvas.saveState();
         PdfGState state = new PdfGState();
         state.setFillOpacity(0);
         this.canvas.setGState(state);
-        this.canvas.setRGBColorStroke(color.getRed(), color.getGreen(), color.getBlue());
+        this.canvas.setRGBColorStroke(stroke.getRed(), stroke.getGreen(), stroke.getBlue());
         this.canvas.setLineWidth(lineWidth);
         this.canvas.rectangle(x, y - height, width, height);
         this.canvas.fillStroke();
@@ -229,87 +238,39 @@ abstract class AbstractThermal {
     }
 
     protected void printBarcode(String code, int absoluteX, int absoluteY) throws DocumentPrinterException {
-
-        try {
-            // --- Visual parameters ---
-            int widthPx = 33;
-            int heightPx = 1;
-
-            // --- ZXing configuration ---
-            Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
-            hints.put(EncodeHintType.MARGIN, 0); // No extra white margin
-
-            // --- Generate barcode (Code 39) ---
-            BitMatrix bitMatrix = new Code39Writer().encode(code, BarcodeFormat.CODE_39, widthPx, heightPx, hints);
-
-            BufferedImage barcodeImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
-
-            // --- Convert BufferedImage -> Image (iText) ---
-            Image image = bufferedImageToITextImage(barcodeImage);
-            image.setAbsolutePosition(absoluteX, absoluteY);
-            image.scaleAbsolute(164, 62);
-
-            document.add(image);
-
-        } catch (IOException | DocumentException e) {
-            throw new DocumentPrinterException("It is not possible to generate the barcode: " + code, e);
-        }
+        Image image = Barcodes.code39(code, 33, 1);
+        image.setAbsolutePosition(absoluteX, absoluteY);
+        image.scaleAbsolute(164, 62);
+        printImage(image);
     }
 
-    private Image bufferedImageToITextImage(BufferedImage bufferedImage) throws IOException, DocumentException {
-        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            ImageIO.write(bufferedImage, "png", output);
-            return Image.getInstance(output.toByteArray());
-        }
-    }
-
+    /**
+     * Prints a PDF417 barcode using the printable width. The content is encoded as ISO-8859-1 when possible (historical behavior, required by the SII electronic stamp) and as UTF-8 (with ECI) otherwise.
+     */
     protected void printPdf417(String code) throws DocumentPrinterException {
-        try {
-            BarcodePDF417 pdf417 = new BarcodePDF417();
-            pdf417.setCodeRows(5);
-            pdf417.setCodeColumns(18);
-            pdf417.setErrorLevel(5);
-            pdf417.setLenCodewords(999);
-            pdf417.setOptions(BarcodePDF417.PDF417_FORCE_BINARY);
-            pdf417.setText(code.getBytes(StandardCharsets.ISO_8859_1));
+        printPdf417(code, code == null ? null : Barcodes.defaultPdf417Charset(code));
+    }
 
-            Image image = pdf417.getImage();
-            image.scaleAbsolute(getPageWidth() - getMarginLeft() - getMarginRight(), 108); // 1:3
-            float imagePositionY = (getPositionY() - image.getScaledHeight());
-            float imagePositionX = (getMarginLeft());
-            image.setAbsolutePosition(imagePositionX, imagePositionY);
-            printImage(image);
-            setPositionY((int) (imagePositionY) - Space.NORMAL.size);
-        } catch (BadElementException ex) {
-            throw new DocumentPrinterException("It is not possible to generate the barcode39: " + code, ex);
-        }
+    /**
+     * Prints a PDF417 barcode encoding the content with an explicit charset.
+     *
+     * @throws DocumentPrinterException
+     *             if the content cannot be represented in {@code charset}
+     */
+    protected void printPdf417(String code, Charset charset) throws DocumentPrinterException {
+        Image image = Barcodes.pdf417(code, charset);
+        image.scaleAbsolute(getPageWidth() - getMarginLeft() - getMarginRight(), 108); // 1:3
+        float imagePositionY = (getPositionY() - image.getScaledHeight());
+        float imagePositionX = (getMarginLeft());
+        image.setAbsolutePosition(imagePositionX, imagePositionY);
+        printImage(image);
+        setPositionY((int) (imagePositionY) - Space.NORMAL.size);
     }
 
     protected Image generateBarcode(String code) throws DocumentPrinterException {
-
-        try {
-            // --- Visual parameters ---
-            int widthPx = 25;
-            int heightPx = 1;
-
-            // --- ZXing configuration ---
-            Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
-            hints.put(EncodeHintType.MARGIN, 0); // No extra white margin
-
-            // --- Generate barcode (Code 39) ---
-            BitMatrix bitMatrix = new Code39Writer().encode(code, BarcodeFormat.CODE_39, widthPx, heightPx, hints);
-
-            BufferedImage barcodeImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
-
-            // --- Convert BufferedImage -> Image (iText) ---
-            Image image = bufferedImageToITextImage(barcodeImage);
-            image.scaleAbsolute(164, 62);
-
-            return image;
-
-        } catch (IOException | DocumentException e) {
-            throw new DocumentPrinterException("It is not possible to generate the barcode: " + code, e);
-        }
+        Image image = Barcodes.code39(code, 25, 1);
+        image.scaleAbsolute(164, 62);
+        return image;
     }
 
     public static float pixelsToPoints(float value, int dpi) {
@@ -328,8 +289,27 @@ abstract class AbstractThermal {
         }
     }
 
+    /**
+     * Closes the document (only once) and returns the generated PDF.
+     *
+     * @return the PDF bytes
+     */
     protected ByteArrayOutputStream close() {
-        document.close();
+        if (!closed) {
+            closed = true;
+            document.close();
+        }
         return baos;
+    }
+
+    /**
+     * Closes the document after a failure, ignoring secondary errors, so writer resources are released.
+     */
+    protected void closeQuietly() {
+        try {
+            close();
+        } catch (RuntimeException ignored) {
+            // the original failure is more relevant than a failure while closing
+        }
     }
 }
